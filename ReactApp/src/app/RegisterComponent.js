@@ -18,7 +18,9 @@ export default function RegisterComponent({ setAuth }) {
     if (username && password) {
       try {
         const userData = {
-          name: username,
+          username,
+          password,
+          name: username, // Optionally keep name as username or add a separate field for real name
           age: age ? Number(age) : undefined,
           profession,
           contact,

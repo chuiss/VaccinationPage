@@ -14,11 +14,11 @@ export default function LoginComponent({ setAuth }) {
         // Fetch user from backend to determine role
         const res = await fetch('/api/users');
         const users = await res.json();
-        const user = users.find(u => u.name === username);
+        const user = users.find(u => u.username === username && u.password === password);
         if (user) {
-          setAuth({ loggedIn: true, role: 'user', username });
+          setAuth({ loggedIn: true, role: user.role, username: user.username, name: user.name });
         } else {
-          setError('User not found');
+          setError('Invalid username or password');
         }
       } catch (err) {
         setError('Login failed');
