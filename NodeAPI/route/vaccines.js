@@ -4,6 +4,7 @@ const Vaccine = require('../DataModel/Vaccine');
 
 // Register vaccine
 router.post('/', async (req, res) => {
+  console.log('POST /api/vaccines called with body:', req.body);
   try {
     const vaccine = new Vaccine(req.body);
     await vaccine.save();
@@ -15,6 +16,7 @@ router.post('/', async (req, res) => {
 
 // List vaccines
 router.get('/', async (req, res) => {
+  console.log('GET /api/vaccines called');
   try {
     const vaccines = await Vaccine.find();
     res.json(vaccines);

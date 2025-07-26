@@ -7,6 +7,7 @@ const Vaccine = require('../DataModel/Vaccine');
 
 // Create appointment
 router.post('/', async (req, res) => {
+  console.log('POST /api/appointments called with body:', req.body);
   try {
     const appointment = new Appointment(req.body);
     // Auto-reject if date is in the past
@@ -22,6 +23,7 @@ router.post('/', async (req, res) => {
 
 // List appointments by status
 router.get('/', async (req, res) => {
+  console.log('GET /api/appointments called');
   try {
     const status = req.query.status;
     let query = {};
@@ -36,6 +38,7 @@ router.get('/', async (req, res) => {
 
 // Admin approve/deny appointment
 router.put('/:id/approve', async (req, res) => {
+  console.log('PUT /api/appointments/' + req.params.id + '/approve called');
   try {
     const { status } = req.body; // 'approved' or 'denied'
     const appointment = await Appointment.findById(req.params.id);

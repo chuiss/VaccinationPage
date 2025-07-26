@@ -4,6 +4,7 @@ const Hospital = require('../DataModel/Hospital');
 
 // Register hospital
 router.post('/', async (req, res) => {
+  console.log('POST /api/hospitals called with body:', req.body);
   try {
     const hospital = new Hospital(req.body);
     await hospital.save();
@@ -15,6 +16,7 @@ router.post('/', async (req, res) => {
 
 // List hospitals
 router.get('/', async (req, res) => {
+  console.log('GET /api/hospitals called');
   try {
     const hospitals = await Hospital.find();
     res.json(hospitals);
