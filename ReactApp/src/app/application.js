@@ -9,9 +9,8 @@ import RegisterComponent from './RegisterComponent';
 
 function HomeComponent() { return <h2>Home</h2>; }
 function DashboardComponent({ name }) { return <h2>Welcome, {name}!</h2>; }
-function VaccinesComponent() { return <h2>Vaccines</h2>; }
-function HospitalsComponent() { return <h2>Hospitals</h2>; }
-function PatientsComponent() { return <h2>Patients</h2>; }
+import VaccinesComponent from './VaccinesComponent';
+import HospitalsComponent from './HospitalsComponent';
 function ReportsComponent() { return <h2>Reports</h2>; }
 function SettingsComponent() { return <h2>Settings</h2>; }
 // Logout function to be used from Sidebar or any button
@@ -64,7 +63,6 @@ function LogoutComponent() {
             <Route path="/appointments" element={<AppointmentsComponent />} />
             <Route path="/vaccines" element={<VaccinesComponent />} />
             <Route path="/hospitals" element={<HospitalsComponent />} />
-            <Route path="/patients" element={<PatientsComponent />} />
             <Route path="/reports" element={<ReportsComponent />} />
             <Route path="/settings" element={<SettingsComponent />} />
             {auth.role === 'admin' && <Route path="/admin" element={<AdminComponent />} />}

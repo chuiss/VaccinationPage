@@ -1,6 +1,18 @@
+
 const express = require('express');
 const router = express.Router();
 const Vaccine = require('../DataModel/Vaccine');
+
+// Delete vaccine by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const result = await Vaccine.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ error: 'Vaccine not found' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Register vaccine
 router.post('/', async (req, res) => {
