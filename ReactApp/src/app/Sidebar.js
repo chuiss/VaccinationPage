@@ -17,13 +17,25 @@ const navStyle = {
 };
 
 
-const Sidebar = ({ setAuth }) => {
+
+
+const Sidebar = ({ setAuth, role: propRole }) => {
   const navigate = useNavigate();
+  // Prefer role from props (live state), fallback to localStorage
+  let role = propRole;
+  if (!role) {
+    try {
+      const auth = JSON.parse(localStorage.getItem('auth'));
+      role = auth && auth.role;
+    } catch {}
+  }
+
   const handleLogout = () => {
     setAuth({ loggedIn: false, role: null, username: '', name: '', showRegister: false });
     localStorage.removeItem('auth');
     navigate('/');
   };
+
   return (
     <div style={{
       width: 220,
@@ -40,12 +52,21 @@ const Sidebar = ({ setAuth }) => {
     }}>
       <h2 style={{ marginLeft: 24, marginBottom: 32, fontWeight: 700 }}>Vaccina</h2>
       <nav>
-        <Link to="/dashboard" style={navStyle}><FaTachometerAlt /> Dashboard</Link>
-        <Link to="/vaccines" style={navStyle}><FaSyringe /> Vaccines</Link>
-        <Link to="/hospitals" style={navStyle}><FaHospital /> Hospitals</Link>
-        <Link to="/appointments" style={navStyle}><FaCalendarAlt /> Appointments</Link>
-        <Link to="/reports" style={navStyle}><FaChartPie /> Reports</Link>
-        <Link to="/settings" style={navStyle}><FaCog /> Settings</Link>
+        {role === 'admin' ? (
+          <>
+            <Link to="/dashboard" style={navStyle}><FaTachometerAlt /> Dashboard</Link>
+            <Link to="/vaccines" style={navStyle}><FaSyringe /> Vaccines</Link>
+            <Link to="/hospitals" style={navStyle}><FaHospital /> Hospitals</Link>
+            <Link to="/appointments" style={navStyle}><FaCalendarAlt /> Appointments</Link>
+            <Link to="/reports" style={navStyle}><FaChartPie /> Reports</Link>
+            <Link to="/settings" style={navStyle}><FaCog /> Settings</Link>
+          </>
+        ) : (
+          <>
+            <Link to="/booking" style={navStyle}><FaSyringe /> Booking</Link>
+            <Link to="/userappointments" style={navStyle}><FaCalendarAlt /> Appointments</Link>
+          </>
+        )}
         <button onClick={handleLogout} style={{ ...navStyle, background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}><FaSignOutAlt /> Logout</button>
       </nav>
     </div>

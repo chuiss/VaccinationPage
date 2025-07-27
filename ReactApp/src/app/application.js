@@ -11,6 +11,8 @@ function HomeComponent() { return <h2>Home</h2>; }
 function DashboardComponent({ name }) { return <h2>Welcome, {name}!</h2>; }
 import VaccinesComponent from './VaccinesComponent';
 import HospitalsComponent from './HospitalsComponent';
+import UserVaccinesComponent from './UserVaccinesComponent';
+import UserAppointmentsComponent from './UserAppointmentsComponent';
 function ReportsComponent() { return <h2>Reports</h2>; }
 function SettingsComponent() { return <h2>Settings</h2>; }
 // Logout function to be used from Sidebar or any button
@@ -55,7 +57,7 @@ function LogoutComponent() {
   return (
     <Router>
       <div style={{ display: 'flex' }}>
-        <Sidebar setAuth={setAuth} />
+        <Sidebar setAuth={setAuth} role={auth.role} />
         <div style={{ marginLeft: 220, width: '100%', background: '#f6f8fa', minHeight: '100vh', padding: 32 }}>
           <Routes>
             <Route path="/" element={<HomeComponent />} />
@@ -65,6 +67,9 @@ function LogoutComponent() {
             <Route path="/hospitals" element={<HospitalsComponent />} />
             <Route path="/reports" element={<ReportsComponent />} />
             <Route path="/settings" element={<SettingsComponent />} />
+            {/* User-specific routes for sidebar */}
+            <Route path="/booking" element={<UserVaccinesComponent />} />
+            <Route path="/userappointments" element={<UserAppointmentsComponent />} />
             {auth.role === 'admin' && <Route path="/admin" element={<AdminComponent />} />}
             <Route path="*" element={<NotFoundComponent />} />
           </Routes>
