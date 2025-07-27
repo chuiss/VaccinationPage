@@ -9,7 +9,9 @@ const Vaccine = require('../DataModel/Vaccine');
 router.post('/', async (req, res) => {
   console.log('POST /api/appointments called with body:', req.body);
   try {
-    const appointment = new Appointment(req.body);
+    const appointment = new Appointment({
+      ...req.body,
+    });
     // Auto-reject if date is in the past
     if (new Date(appointment.date) < new Date()) {
       appointment.status = 'rejected';
@@ -40,14 +42,28 @@ router.get('/', async (req, res) => {
 router.put('/:id/approve', async (req, res) => {
   console.log('PUT /api/appointments/' + req.params.id + '/approve called');
   try {
-    const { status } = req.body; // 'approved' or 'denied'
+    const { status } = req.body; // 'approved' or 'rejected'
+    if (!['approved', 'rejected'].includes((status || '').toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
     const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) return res.status(404).json({ error: 'Not found' });
-    appointment.status = status;
+    if (!appointment) return res.status(404).json({ error: 'Appointment not found' });
+    appointment.status = status.toLowerCase();
     await appointment.save();
     res.json(appointment);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete appointment by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await Appointment.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Appointment not found' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -1,26 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import { useLocation } from 'react-router-dom';
- 
-export default function UserAppointmentsComponent() {
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+
+export default function AdminAppointmentsComponent() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
-  const bookingSuccess = location.state && location.state.bookingSuccess;
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('');
 
-    // PDF generation handler
+  // Fetch appointments for all users, optionally filtered by status
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        let url = '/api/appointments';
+        if (statusFilter) url += `?status=${encodeURIComponent(statusFilter)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setAppointments(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setAppointments([]);
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, [statusFilter]);
+
+  // PDF generation handler
   const handleGeneratePdf = (appointment) => {
     const doc = new jsPDF();
-    // Centered, bold title
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     const pageWidth = doc.internal.pageSize.getWidth();
     const title = 'Vaccination Appointment Summary';
     const titleWidth = doc.getTextWidth(title);
     doc.text(title, (pageWidth - titleWidth) / 2, 22);
-
     doc.setFontSize(12);
     let y = 38;
     const addRow = (label, value) => {
@@ -40,7 +54,6 @@ export default function UserAppointmentsComponent() {
     addRow('Vaccine Charge:', `$${appointment.vaccineId?.price || 0}`);
     addRow('Total Charged:', `$${Number(appointment.hospitalId?.charges || 0) + Number(appointment.vaccineId?.price || 0)}`);
     addRow('Status:', (appointment.status || 'Scheduled').toUpperCase());
-
     doc.save(`appointment_${appointment._id}.pdf`);
   };
 
@@ -58,39 +71,6 @@ export default function UserAppointmentsComponent() {
       alert('Error deleting appointment: ' + err.message);
     }
   };
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        // Replace with actual user-specific API endpoint
-        const res = await fetch('/api/appointments');
-        const data = await res.json();
-        console.log('Fetched appointments data:', data);
-        let appointmentsData = Array.isArray(data) ? data : [];
-        if (Array.isArray(appointmentsData)) {
-          // Sort by date (desc), then time (desc, string compare)
-          appointmentsData.sort((a, b) => {
-            // Compare date first
-            if (a.date > b.date) return -1;
-            if (a.date < b.date) return 1;
-            // If same date, compare time (descending)
-            if ((b.time || '') > (a.time || '')) return 1;
-            if ((b.time || '') < (a.time || '')) return -1;
-            return 0;
-          });
-          setAppointments(appointmentsData);
-          console.log('Appointments state set to:', appointmentsData);
-        } else {
-          setAppointments([]);
-        }
-      } catch (err) {
-        console.log('Error fetching appointments:', err);
-        setAppointments([]);
-      }
-      setLoading(false);
-    }
-    fetchData();
-  }, []);
 
   // Status icon mapping
   const statusIcon = status => {
@@ -108,14 +88,37 @@ export default function UserAppointmentsComponent() {
     }
   };
 
+  // Approve/Reject handlers
+  const handleStatusChange = async (id, status) => {
+    try {
+      const res = await fetch(`/api/appointments/${id}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        setAppointments(apps => apps.map(app => app._id === id ? { ...app, status } : app));
+      } else {
+        alert('Failed to update status.');
+      }
+    } catch (err) {
+      alert('Error updating status: ' + err.message);
+    }
+  };
+
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', padding: 24 }}>
-      {bookingSuccess && (
-        <div style={{ background: '#22c55e', color: '#fff', padding: 12, borderRadius: 6, marginBottom: 16, textAlign: 'center', fontWeight: 600 }}>
-          Booking success! Your appointment has been booked.
-        </div>
-      )}
-      <h2>My Appointments</h2>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
+      <h2>All Appointments (Admin View)</h2>
+      <div style={{ marginBottom: 16 }}>
+        <label htmlFor="statusFilter" style={{ marginRight: 8, fontWeight: 500 }}>Filter by Status:</label>
+        <select id="statusFilter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: 4, borderRadius: 4 }}>
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="denied">Denied</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
       {loading ? <div>Loading...</div> : appointments.length === 0 ? (
         <div>No appointments found.</div>
       ) : (
@@ -128,6 +131,7 @@ export default function UserAppointmentsComponent() {
               <th style={{ padding: 8, border: '1px solid #eee' }}>Date</th>
               <th style={{ padding: 8, border: '1px solid #eee' }}>Time Slot</th>
               <th style={{ padding: 8, border: '1px solid #eee' }}>Status</th>
+              <th style={{ padding: 8, border: '1px solid #eee' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -138,7 +142,15 @@ export default function UserAppointmentsComponent() {
                 <td style={{ padding: 8, border: '1px solid #eee' }}>{a.vaccineId?.name || a.vaccineName || a.vaccine}</td>
                 <td style={{ padding: 8, border: '1px solid #eee' }}>{a.date ? new Date(a.date).toLocaleDateString() : ''}</td>
                 <td style={{ padding: 8, border: '1px solid #eee' }}>{a.time || ''}</td>
-                <td style={{ padding: 8, border: '1px solid #eee' }}>{statusIcon(a.status)}{a.status || 'Scheduled'}</td>
+                <td style={{ padding: 8, border: '1px solid #eee' }}>
+                  {statusIcon(a.status)}{a.status || 'Scheduled'}
+                  {String(a.status).toLowerCase() === 'pending' && (
+                    <span style={{ marginLeft: 8, display: 'inline-flex', gap: 4 }}>
+                      <button onClick={() => handleStatusChange(a._id, 'approved')} style={{ padding: '2px 8px', borderRadius: 4, border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Approve</button>
+                      <button onClick={() => handleStatusChange(a._id, 'rejected')} style={{ padding: '2px 8px', borderRadius: 4, border: 'none', background: '#e53e3e', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Reject</button>
+                    </span>
+                  )}
+                </td>
                 <td style={{ padding: 8, border: '1px solid #eee', display: 'flex', gap: 8 }}>
                   <button onClick={() => { setSelectedAppointment(a); setShowModal(true); }} style={{ padding: '4px 12px', borderRadius: 4, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer' }}>View</button>
                   <button onClick={() => handleGeneratePdf(a)} style={{ padding: '4px 12px', borderRadius: 4, border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer' }}>PDF</button>
@@ -158,6 +170,7 @@ export default function UserAppointmentsComponent() {
           <div style={{ background: '#fff', borderRadius: 8, padding: 32, minWidth: 320, maxWidth: 400, boxShadow: '0 2px 16px #0003', position: 'relative' }}>
             <button onClick={() => setShowModal(false)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>&times;</button>
             <h3 style={{ marginBottom: 16 }}>Appointment Details</h3>
+            <div style={{ marginBottom: 8 }}><b>Patient:</b> {selectedAppointment.userName || ''}</div>
             <div style={{ marginBottom: 8 }}><b>Hospital:</b> {selectedAppointment.hospitalId?.name || selectedAppointment.hospitalName || selectedAppointment.hospital}</div>
             <div style={{ marginBottom: 8 }}><b>Address:</b> {selectedAppointment.hospitalId?.address || selectedAppointment.hospitalAddress || ''}</div>
             <div style={{ marginBottom: 8 }}><b>Vaccine:</b> {selectedAppointment.vaccineId?.name || selectedAppointment.vaccineName || selectedAppointment.vaccine}</div>

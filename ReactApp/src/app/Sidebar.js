@@ -54,12 +54,10 @@ const Sidebar = ({ setAuth, role: propRole }) => {
       <nav>
         {role === 'admin' ? (
           <>
-            <Link to="/dashboard" style={navStyle}><FaTachometerAlt /> Dashboard</Link>
+            <Link to="/reports" style={navStyle}><FaChartPie /> Reports</Link>
             <Link to="/vaccines" style={navStyle}><FaSyringe /> Vaccines</Link>
             <Link to="/hospitals" style={navStyle}><FaHospital /> Hospitals</Link>
             <Link to="/appointments" style={navStyle}><FaCalendarAlt /> Appointments</Link>
-            <Link to="/reports" style={navStyle}><FaChartPie /> Reports</Link>
-            <Link to="/settings" style={navStyle}><FaCog /> Settings</Link>
           </>
         ) : (
           <>

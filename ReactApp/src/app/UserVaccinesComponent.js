@@ -60,11 +60,13 @@ export default function UserVaccinesComponent() {
   const handlePay = async () => {
     setMessage('');
     try {
-      // Get userId from localStorage auth
+      // Get userId and userName from localStorage auth
       const auth = JSON.parse(localStorage.getItem('auth'));
       const userId = auth && auth._id ? auth._id : auth && auth.userId ? auth.userId : undefined;
+      const userName = auth && auth.username ? auth.username : '';
       const payload = {
         userId,
+        userName,
         hospitalId: selectedHospital,
         vaccineId: selectedVaccine,
         date: appointmentDate,

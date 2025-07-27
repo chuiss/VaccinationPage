@@ -6,6 +6,7 @@ const AppointmentSchema = new mongoose.Schema({
   title: String,
   location: String,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  userName: String,
   hospitalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital' },
   vaccineId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vaccine' },
   status: { type: String, default: 'pending' } // pending, approved, denied, rejected

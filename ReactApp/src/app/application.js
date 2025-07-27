@@ -3,16 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import AppointmentsComponent from './AppointmentsComponent';
 import LoginComponent from './LoginComponent';
 import RegisterComponent from './RegisterComponent';
 
-function HomeComponent() { return <h2>Home</h2>; }
 function DashboardComponent({ name }) { return <h2>Welcome, {name}!</h2>; }
 import VaccinesComponent from './VaccinesComponent';
 import HospitalsComponent from './HospitalsComponent';
 import UserVaccinesComponent from './UserVaccinesComponent';
 import UserAppointmentsComponent from './UserAppointmentsComponent';
+import AdminAppointmentsComponent from './AdminAppointmentsComponent';
+import HomeComponent from './HomeComponent';
 function ReportsComponent() { return <h2>Reports</h2>; }
 function SettingsComponent() { return <h2>Settings</h2>; }
 // Logout function to be used from Sidebar or any button
@@ -62,7 +62,7 @@ function LogoutComponent() {
           <Routes>
             <Route path="/" element={<HomeComponent />} />
             <Route path="/dashboard" element={<DashboardComponent name={auth.name} />} />
-            <Route path="/appointments" element={<AppointmentsComponent />} />
+            <Route path="/appointments" element={<AdminAppointmentsComponent />} />
             <Route path="/vaccines" element={<VaccinesComponent />} />
             <Route path="/hospitals" element={<HospitalsComponent />} />
             <Route path="/reports" element={<ReportsComponent />} />
