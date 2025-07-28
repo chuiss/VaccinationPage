@@ -13,7 +13,7 @@ import UserVaccinesComponent from './UserVaccinesComponent';
 import UserAppointmentsComponent from './UserAppointmentsComponent';
 import AdminAppointmentsComponent from './AdminAppointmentsComponent';
 import HomeComponent from './HomeComponent';
-function ReportsComponent() { return <h2>Reports</h2>; }
+import ReportsComponent from './ReportsComponent';
 function SettingsComponent() { return <h2>Settings</h2>; }
 // Logout function to be used from Sidebar or any button
 function useLogout(setAuth) {

@@ -10,6 +10,16 @@ export default function UserAppointmentsComponent() {
   const location = useLocation();
   const bookingSuccess = location.state && location.state.bookingSuccess;
 
+  // Helper function to get current user from auth
+  const getCurrentUser = () => {
+    try {
+      const auth = JSON.parse(localStorage.getItem('auth'));
+      return auth && auth.username ? auth.username : '';
+    } catch {
+      return '';
+    }
+  };
+
     // PDF generation handler
   const handleGeneratePdf = (appointment) => {
     const doc = new jsPDF();
@@ -36,9 +46,9 @@ export default function UserAppointmentsComponent() {
     addRow('Vaccine:', appointment.vaccineId?.name || appointment.vaccineName || appointment.vaccine || '');
     addRow('Date:', appointment.date ? new Date(appointment.date).toLocaleDateString() : '');
     addRow('Time Slot:', appointment.time || '');
-    addRow('Hospital Charge:', `$${appointment.hospitalId?.charges || 0}`);
-    addRow('Vaccine Charge:', `$${appointment.vaccineId?.price || 0}`);
-    addRow('Total Charged:', `$${Number(appointment.hospitalId?.charges || 0) + Number(appointment.vaccineId?.price || 0)}`);
+    addRow('Hospital Charge:', `$${appointment.hospitalCharges || 0}`);
+    addRow('Vaccine Charge:', `$${appointment.vaccinePrice || 0}`);
+    addRow('Total Charged:', `$${Number(appointment.hospitalCharges || 0) + Number(appointment.vaccinePrice || 0)}`);
     addRow('Status:', (appointment.status || 'Scheduled').toUpperCase());
 
     doc.save(`appointment_${appointment._id}.pdf`);
@@ -62,10 +72,27 @@ export default function UserAppointmentsComponent() {
     async function fetchData() {
       setLoading(true);
       try {
-        // Replace with actual user-specific API endpoint
-        const res = await fetch('/api/appointments');
+        // Get current user from auth in localStorage
+        let currentUser = '';
+        try {
+          const auth = JSON.parse(localStorage.getItem('auth'));
+          currentUser = auth && auth.username ? auth.username : '';
+        } catch {
+          currentUser = '';
+        }
+
+        if (!currentUser) {
+          console.log('No current user found in auth');
+          setAppointments([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch appointments for the specific user
+        const res = await fetch(`/api/appointments/user/${currentUser}`);
         const data = await res.json();
-        console.log('Fetched appointments data:', data);
+        console.log('Fetched appointments data for user:', currentUser, data);
+        
         let appointmentsData = Array.isArray(data) ? data : [];
         if (Array.isArray(appointmentsData)) {
           // Sort by date (desc), then time (desc, string compare)
@@ -116,8 +143,23 @@ export default function UserAppointmentsComponent() {
         </div>
       )}
       <h2>My Appointments</h2>
-      {loading ? <div>Loading...</div> : appointments.length === 0 ? (
-        <div>No appointments found.</div>
+      {loading ? <div>Loading...</div> : (() => {
+        let currentUser = '';
+        try {
+          const auth = JSON.parse(localStorage.getItem('auth'));
+          currentUser = auth && auth.username ? auth.username : '';
+        } catch {
+          currentUser = '';
+        }
+        return !currentUser;
+      })() ? (
+        <div style={{ textAlign: 'center', padding: 24, background: '#fef3cd', border: '1px solid #fbbf24', borderRadius: 8 }}>
+          <p style={{ margin: 0, color: '#92400e' }}>Please log in to view your appointments.</p>
+        </div>
+      ) : appointments.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: 24, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+          <p style={{ margin: 0, color: '#6b7280' }}>No appointments found.</p>
+        </div>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -163,10 +205,10 @@ export default function UserAppointmentsComponent() {
             <div style={{ marginBottom: 8 }}><b>Vaccine:</b> {selectedAppointment.vaccineId?.name || selectedAppointment.vaccineName || selectedAppointment.vaccine}</div>
             <div style={{ marginBottom: 8 }}><b>Date:</b> {selectedAppointment.date ? new Date(selectedAppointment.date).toLocaleDateString() : ''}</div>
             <div style={{ marginBottom: 8 }}><b>Time Slot:</b> {selectedAppointment.time || ''}</div>
-            <div style={{ marginBottom: 8 }}><b>Hospital Charge:</b> ${selectedAppointment.hospitalId?.charges || 0}</div>
-            <div style={{ marginBottom: 8 }}><b>Vaccine Charge:</b> ${selectedAppointment.vaccineId?.price || 0}</div>
+            <div style={{ marginBottom: 8 }}><b>Hospital Charge:</b> ${selectedAppointment.hospitalCharges || selectedAppointment.hospitalId?.charges || 0}</div>
+            <div style={{ marginBottom: 8 }}><b>Vaccine Charge:</b> ${selectedAppointment.vaccinePrice || selectedAppointment.vaccineId?.price || 0}</div>
             <div style={{ marginBottom: 8, fontWeight: 600 }}><b>Total Charged:</b> ${
-              (Number(selectedAppointment.hospitalId?.charges || 0) + Number(selectedAppointment.vaccineId?.price || 0))
+              (Number(selectedAppointment.hospitalCharges || selectedAppointment.hospitalId?.charges || 0) + Number(selectedAppointment.vaccinePrice || selectedAppointment.vaccineId?.price || 0))
             }</div>
             <div style={{ marginBottom: 8 }}><b>Status:</b> {statusIcon(selectedAppointment.status)}{selectedAppointment.status || 'Scheduled'}</div>
           </div>

@@ -5,10 +5,10 @@ const AppointmentSchema = new mongoose.Schema({
   time: String,
   title: String,
   location: String,
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  userId: String, // Changed from ObjectId to String
   userName: String,
-  hospitalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital' },
-  vaccineId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vaccine' },
+  hospitalId: String, // Changed from ObjectId to String
+  vaccineId: String, // Changed from ObjectId to String
   status: { type: String, default: 'pending' } // pending, approved, denied, rejected
 });
 

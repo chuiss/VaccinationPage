@@ -14,6 +14,7 @@ app.use('/api/users', require('./route/users'));
 app.use('/api/vaccines', require('./route/vaccines'));
 app.use('/api/hospitals', require('./route/hospitals'));
 app.use('/api/appointments', require('./route/appointments'));
+app.use('/api/reports', require('./route/reports'));
 
 // Custom 404
 app.use((req, res) => {

@@ -50,9 +50,9 @@ export default function AdminAppointmentsComponent() {
     addRow('Vaccine:', appointment.vaccineId?.name || appointment.vaccineName || appointment.vaccine || '');
     addRow('Date:', appointment.date ? new Date(appointment.date).toLocaleDateString() : '');
     addRow('Time Slot:', appointment.time || '');
-    addRow('Hospital Charge:', `$${appointment.hospitalId?.charges || 0}`);
-    addRow('Vaccine Charge:', `$${appointment.vaccineId?.price || 0}`);
-    addRow('Total Charged:', `$${Number(appointment.hospitalId?.charges || 0) + Number(appointment.vaccineId?.price || 0)}`);
+    addRow('Hospital Charge:', `$${appointment.hospitalCharges  || 0}`);
+    addRow('Vaccine Charge:', `$${appointment.vaccinePrice  || 0}`);
+    addRow('Total Charged:', `$${Number(appointment.hospitalCharges || 0) + Number(appointment.vaccinePrice || 0)}`);
     addRow('Status:', (appointment.status || 'Scheduled').toUpperCase());
     doc.save(`appointment_${appointment._id}.pdf`);
   };
@@ -176,10 +176,10 @@ export default function AdminAppointmentsComponent() {
             <div style={{ marginBottom: 8 }}><b>Vaccine:</b> {selectedAppointment.vaccineId?.name || selectedAppointment.vaccineName || selectedAppointment.vaccine}</div>
             <div style={{ marginBottom: 8 }}><b>Date:</b> {selectedAppointment.date ? new Date(selectedAppointment.date).toLocaleDateString() : ''}</div>
             <div style={{ marginBottom: 8 }}><b>Time Slot:</b> {selectedAppointment.time || ''}</div>
-            <div style={{ marginBottom: 8 }}><b>Hospital Charge:</b> ${selectedAppointment.hospitalId?.charges || 0}</div>
-            <div style={{ marginBottom: 8 }}><b>Vaccine Charge:</b> ${selectedAppointment.vaccineId?.price || 0}</div>
+            <div style={{ marginBottom: 8 }}><b>Hospital Charge:</b> ${selectedAppointment.hospitalCharges || selectedAppointment.hospitalId?.charges || 0}</div>
+            <div style={{ marginBottom: 8 }}><b>Vaccine Charge:</b> ${selectedAppointment.vaccinePrice || selectedAppointment.vaccineId?.price || 0}</div>
             <div style={{ marginBottom: 8, fontWeight: 600 }}><b>Total Charged:</b> ${
-              (Number(selectedAppointment.hospitalId?.charges || 0) + Number(selectedAppointment.vaccineId?.price || 0))
+              (Number(selectedAppointment.hospitalCharges || selectedAppointment.hospitalId?.charges || 0) + Number(selectedAppointment.vaccinePrice || selectedAppointment.vaccineId?.price || 0))
             }</div>
             <div style={{ marginBottom: 8 }}><b>Status:</b> {statusIcon(selectedAppointment.status)}{selectedAppointment.status || 'Scheduled'}</div>
           </div>
